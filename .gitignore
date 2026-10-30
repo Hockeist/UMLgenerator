@@ -1,0 +1,12 @@
+build/
+build-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+*.pro.user
+CMakeLists.txt.user*
+.qtc_clangd/
+.DS_Store
+*.app/
+*.exe
+*.dmg
