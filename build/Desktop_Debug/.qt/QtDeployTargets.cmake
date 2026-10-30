@@ -1,2 +1,0 @@
-set(__QT_DEPLOY_TARGET_UMLgenerator_FILE /Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/UMLgenerator.app/Contents/MacOS/UMLgenerator)
-set(__QT_DEPLOY_TARGET_UMLgenerator_TYPE EXECUTABLE)

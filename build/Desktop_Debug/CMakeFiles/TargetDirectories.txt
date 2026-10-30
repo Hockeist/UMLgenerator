@@ -1,9 +1,0 @@
-/Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/CMakeFiles/UMLgenerator.dir
-/Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/CMakeFiles/edit_cache.dir
-/Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/CMakeFiles/rebuild_cache.dir
-/Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/CMakeFiles/list_install_components.dir
-/Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/CMakeFiles/install.dir
-/Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/CMakeFiles/install/local.dir
-/Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/CMakeFiles/install/strip.dir
-/Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/CMakeFiles/UMLgenerator_autogen_timestamp_deps.dir
-/Users/g0blin/Desktop/work/qtCreator/UMLgenerator/build/Desktop_Debug/CMakeFiles/UMLgenerator_autogen.dir
