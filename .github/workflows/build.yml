@@ -1,35 +1,31 @@
 name: Build App (Windows, Linux, macOS)
 
-# Запускать сборку автоматически при каждой отправке кода на GitHub
 on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # 1. Сборка готового приложения для WINDOWS (.zip с .exe и всеми .dll)
-  # ---------------------------------------------------------------------------
   build-windows:
     runs-on: windows-latest
     steps:
-      - name: Скачивание кода проекта
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Установка Qt 6 для Windows
+      - name: Install Qt 6
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.6.3'
           arch: 'win64_msvc2019_64'
 
-      - name: Сборка UMLgenerator.exe
+      - name: Build UMLgenerator.exe
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
 
-      - name: Упаковка всех библиотек (.dll) в одну папку
+      - name: Package Windows Portable
         shell: cmd
         run: |
           mkdir UMLgenerator_Windows
@@ -37,53 +33,48 @@ jobs:
           if exist "C:\Program Files\LLVM\bin\libclang.dll" copy "C:\Program Files\LLVM\bin\libclang.dll" UMLgenerator_Windows\
           windeployqt --release --no-translations UMLgenerator_Windows\UMLgenerator.exe
 
-      - name: Публикация готового архива для Windows
+      - name: Upload Windows App
         uses: actions/upload-artifact@v4
         with:
           name: UMLgenerator-Windows-Portable
           path: UMLgenerator_Windows/
 
-  # ---------------------------------------------------------------------------
-  # 2. Сборка готового приложения для LINUX
-  # ---------------------------------------------------------------------------
   build-linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - name: Скачивание кода проекта
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Установка Qt 6 и libclang для Linux
+      - name: Install Qt 6 and libclang
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake qt6-base-dev libclang-dev llvm-dev
+          sudo apt-get install -y build-essential cmake qt6-base-dev libqt6svg6-dev llvm-dev libclang-dev clang
 
-      - name: Сборка приложения для Linux
+      - name: Build Linux App
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build
 
-      - name: Публикация готового приложения для Linux
+      - name: Upload Linux App
         uses: actions/upload-artifact@v4
         with:
           name: UMLgenerator-Linux-x64
           path: build/UMLgenerator
 
-  # ---------------------------------------------------------------------------
-  # 3. Сборка готового приложения для macOS (.dmg установщик)
-  # ---------------------------------------------------------------------------
   build-macos:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
-      - name: Скачивание кода проекта
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Установка Qt 6 и LLVM на macOS
+      - name: Install Qt 6 and LLVM
         run: |
           brew install qt@6 llvm
 
-      - name: Сборка и упаковка UMLgenerator.dmg для Mac
+      - name: Build and Package macOS App
         run: |
           export PATH="/opt/homebrew/opt/qt@6/bin:$PATH"
+          export LLVM_INSTALL_DIR="/opt/homebrew/opt/llvm"
           cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/qt@6"
           cmake --build build
           mkdir -p build/UMLgenerator.app/Contents/Frameworks
@@ -92,7 +83,7 @@ jobs:
           codesign --force --deep --sign - build/UMLgenerator.app
           hdiutil create -volname "UMLgenerator" -srcfolder build/UMLgenerator.app -ov -format UDZO UMLgenerator_macOS.dmg
 
-      - name: Публикация готового установщика для macOS
+      - name: Upload macOS Installer
         uses: actions/upload-artifact@v4
         with:
           name: UMLgenerator-macOS-Installer

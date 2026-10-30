@@ -1,12 +1,13 @@
-
 cmake_minimum_required(VERSION 3.16)
 
 project(UMLgenerator VERSION 0.1 LANGUAGES CXX)
 
+# Включаем автоматическую генерацию кода Qt (MOC, UIC, RCC)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+# Требуем стандарт C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -30,13 +31,11 @@ if(APPLE)
     set(LIBCLANG_INCLUDE_DIR "${LLVM_ROOT}/include")
 
     if(NOT EXISTS "${LIBCLANG_LIBRARY}")
-        message(FATAL_ERROR
-            "Не найдена libclang: ${LIBCLANG_LIBRARY}")
+        message(FATAL_ERROR "Не найдена libclang: ${LIBCLANG_LIBRARY}")
     endif()
 
     if(NOT EXISTS "${LIBCLANG_INCLUDE_DIR}/clang-c/Index.h")
-        message(FATAL_ERROR
-            "Не найден заголовок clang-c/Index.h")
+        message(FATAL_ERROR "Не найден заголовок clang-c/Index.h")
     endif()
 
     execute_process(
@@ -55,35 +54,45 @@ elseif(WIN32)
 
     find_path(LIBCLANG_INCLUDE_DIR
         NAMES clang-c/Index.h
-        PATHS
-            "${LLVM_ROOT}/include"
+        PATHS "${LLVM_ROOT}/include"
         NO_DEFAULT_PATH
     )
 
     find_library(LIBCLANG_LIBRARY
         NAMES libclang clang
-        PATHS
-            "${LLVM_ROOT}/lib"
-            "${LLVM_ROOT}/bin"
+        PATHS "${LLVM_ROOT}/lib" "${LLVM_ROOT}/bin"
         NO_DEFAULT_PATH
     )
 
     if(NOT LIBCLANG_INCLUDE_DIR)
-        message(FATAL_ERROR
-            "Не найдены заголовки libclang. Проверь установку LLVM.")
+        message(FATAL_ERROR "Не найдены заголовки libclang. Проверь установку LLVM.")
     endif()
 
     if(NOT LIBCLANG_LIBRARY)
-        message(FATAL_ERROR
-            "Не найдена библиотека libclang. Проверь установку LLVM.")
+        message(FATAL_ERROR "Не найдена библиотека libclang. Проверь установку LLVM.")
     endif()
 
 elseif(UNIX)
 
+    # На Linux автоматически спрашиваем у системы, где установлен LLVM
+    execute_process(
+        COMMAND llvm-config --libdir
+        OUTPUT_VARIABLE LLVM_SYSTEM_LIBDIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    execute_process(
+        COMMAND llvm-config --includedir
+        OUTPUT_VARIABLE LLVM_SYSTEM_INCDIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+
     find_library(LIBCLANG_LIBRARY
-        NAMES clang libclang
+        NAMES clang libclang libclang.so libclang.so.1
         PATHS
             "$ENV{LLVM_INSTALL_DIR}/lib"
+            "${LLVM_SYSTEM_LIBDIR}"
             /usr/lib
             /usr/lib/llvm-18/lib
             /usr/lib/llvm-17/lib
@@ -98,6 +107,7 @@ elseif(UNIX)
         NAMES clang-c/Index.h
         PATHS
             "$ENV{LLVM_INSTALL_DIR}/include"
+            "${LLVM_SYSTEM_INCDIR}"
             /usr/include
             /usr/lib/llvm-18/include
             /usr/lib/llvm-17/include
@@ -107,15 +117,11 @@ elseif(UNIX)
     )
 
     if(NOT LIBCLANG_LIBRARY)
-        message(FATAL_ERROR
-            "Не найдена библиотека libclang. "
-            "Установи пакет libclang-dev.")
+        message(FATAL_ERROR "Не найдена библиотека libclang. Установи пакет libclang-dev.")
     endif()
 
     if(NOT LIBCLANG_INCLUDE_DIR)
-        message(FATAL_ERROR
-            "Не найден clang-c/Index.h. "
-            "Установи пакет libclang-dev.")
+        message(FATAL_ERROR "Не найден clang-c/Index.h. Установи пакет libclang-dev.")
     endif()
 
 endif()
@@ -128,7 +134,6 @@ message(STATUS "libclang include: ${LIBCLANG_INCLUDE_DIR}")
 # -----------------------------------------------------------------------------
 
 set(PROJECT_SOURCES
-
     src/main.cpp
 
     ui/mainwindow.cpp
@@ -177,11 +182,9 @@ target_include_directories(UMLgenerator PRIVATE
 # -----------------------------------------------------------------------------
 
 if(APPLE AND MACOS_SDK_PATH)
-
     target_compile_definitions(UMLgenerator PRIVATE
         UML_MACOS_SDK_PATH="${MACOS_SDK_PATH}"
     )
-
 endif()
 
 # -----------------------------------------------------------------------------
@@ -192,8 +195,7 @@ set_target_properties(UMLgenerator PROPERTIES
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING
-        ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
 )
 
 if(APPLE)
@@ -203,17 +205,15 @@ if(APPLE)
 endif()
 
 # -----------------------------------------------------------------------------
-# Копирование libclang.dll в папку приложения на Windows
+# Копирование настоящего файла libclang.dll в папку приложения на Windows
 # -----------------------------------------------------------------------------
 
-if(WIN32)
-
+if(WIN32 AND EXISTS "${LLVM_ROOT}/bin/libclang.dll")
     add_custom_command(TARGET UMLgenerator POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${LIBCLANG_LIBRARY}"
+            "${LLVM_ROOT}/bin/libclang.dll"
             "$<TARGET_FILE_DIR:UMLgenerator>/libclang.dll"
     )
-
 endif()
 
 # -----------------------------------------------------------------------------

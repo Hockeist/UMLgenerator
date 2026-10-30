@@ -6,8 +6,8 @@ CMakeCache.txt
 *.pro.user
 CMakeLists.txt.user*
 .qtc_clangd/
+.qtcreator/
 .DS_Store
 *.app/
 *.exe
 *.dmg
-.qtcreator/
