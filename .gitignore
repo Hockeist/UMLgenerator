@@ -10,3 +10,4 @@ CMakeLists.txt.user*
 *.app/
 *.exe
 *.dmg
+.qtcreator/
